@@ -962,6 +962,14 @@ require('lazy').setup({
   {
     'EdenEast/nightfox.nvim',
     init = function()
+      require('nightfox').setup {
+        options = {
+          transparent = true,
+          inverse = {
+            visual = true,
+          },
+        },
+      }
       vim.cmd.colorscheme 'carbonfox'
     end,
   },
