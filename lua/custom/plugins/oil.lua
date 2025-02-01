@@ -11,10 +11,10 @@ return {
 
     vim.keymap.set('n', '<space>of', function()
       vim.fn.execute('edit .', 'silent')
-    end)
+    end, { desc = 'Open workspace folder' })
     vim.keymap.set('n', '<space>oo', function()
       local path = vim.fn.expand '%:h'
       vim.fn.execute('edit ' .. path, 'silent')
-    end)
+    end, { desc = 'Open current file folder' })
   end,
 }
