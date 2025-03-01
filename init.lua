@@ -750,6 +750,8 @@ require('lazy').setup({
             },
           },
         },
+
+        ['tailwindcss-language-server'] = {},
       }
 
       -- Ensure the servers and tools above are installed
@@ -837,7 +839,10 @@ require('lazy').setup({
         typescript = { 'prettierd', 'prettier', 'biome', stop_after_first = true },
         html = { 'prettierd', 'prettier', 'biome', stop_after_first = true },
         htmlangular = { 'prettierd', 'prettier', 'biome', stop_after_first = true },
+        scss = { 'prettierd', 'prettier', 'biome', stop_after_first = true },
+        css = { 'prettierd', 'prettier', 'biome', stop_after_first = true },
         json = { 'prettierd', 'prettier', 'biome', stop_after_first = true },
+        jsonc = { 'prettierd', 'prettier', 'biome', stop_after_first = true },
       },
     },
   },
