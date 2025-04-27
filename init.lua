@@ -473,7 +473,6 @@ require('lazy').setup({
       { 'williamboman/mason.nvim', opts = {} },
       'williamboman/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
-      'nvim-java/nvim-java',
 
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
@@ -787,8 +786,6 @@ require('lazy').setup({
           end,
         },
         jdtls = function()
-          require('java').setup {}
-
           require('lspconfig').jdtls.setup {}
         end,
       }
