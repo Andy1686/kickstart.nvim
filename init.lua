@@ -473,6 +473,7 @@ require('lazy').setup({
       { 'williamboman/mason.nvim', opts = {} },
       'williamboman/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
+      'nvim-java/nvim-java',
 
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
@@ -573,6 +574,9 @@ require('lazy').setup({
           -- WARN: This is not Goto Definition, this is Goto Declaration.
           --  For example, in C this would take you to the header.
           map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+
+          -- Open float window with diagnostics
+          map('<leader>e', vim.diagnostic.open_float, '[E]rrors')
 
           -- This function resolves a difference between neovim nightly (version 0.11) and stable (version 0.10)
           ---@param client vim.lsp.Client
@@ -705,7 +709,21 @@ require('lazy').setup({
           filetypes = { 'typescript', 'html', 'typescriptreact', 'typescript.tsx', 'htmlangular' },
         },
         emmet_ls = {
-          filetypes = { 'css', 'eruby', 'html', 'javascript', 'javascriptreact', 'less', 'sass', 'scss', 'svelte', 'pug', 'typescriptreact', 'vue' },
+          filetypes = {
+            'css',
+            'eruby',
+            'html',
+            'htmlangular',
+            'javascript',
+            'javascriptreact',
+            'less',
+            'sass',
+            'scss',
+            'svelte',
+            'pug',
+            'typescriptreact',
+            'vue',
+          },
           init_options = {
             html = {
               options = {
@@ -766,6 +784,11 @@ require('lazy').setup({
             require('lspconfig')[server_name].setup(server)
           end,
         },
+        jdtls = function()
+          require('java').setup {}
+
+          require('lspconfig').jdtls.setup {}
+        end,
       }
     end,
   },
@@ -786,6 +809,7 @@ require('lazy').setup({
     },
     opts = {
       notify_on_error = true,
+      notify_no_formatters = true,
       format_on_save = function(bufnr)
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
@@ -812,6 +836,8 @@ require('lazy').setup({
         javascript = { 'prettierd', 'prettier', 'biome', stop_after_first = true },
         typescript = { 'prettierd', 'prettier', 'biome', stop_after_first = true },
         html = { 'prettierd', 'prettier', 'biome', stop_after_first = true },
+        htmlangular = { 'prettierd', 'prettier', 'biome', stop_after_first = true },
+        json = { 'prettierd', 'prettier', 'biome', stop_after_first = true },
       },
     },
   },
@@ -852,12 +878,15 @@ require('lazy').setup({
       'hrsh7th/cmp-nvim-lsp',
       'hrsh7th/cmp-path',
       'hrsh7th/cmp-nvim-lsp-signature-help',
+      'onsails/lspkind.nvim',
     },
     config = function()
       -- See `:help cmp`
       local cmp = require 'cmp'
       local luasnip = require 'luasnip'
       luasnip.config.setup {}
+
+      local lspkind = require 'lspkind'
 
       cmp.setup {
         snippet = {
@@ -925,10 +954,22 @@ require('lazy').setup({
             -- set group index to 0 to skip loading LuaLS completions as lazydev recommends it
             group_index = 0,
           },
+          { name = 'supermaven' },
           { name = 'nvim_lsp' },
           { name = 'luasnip' },
           { name = 'path' },
           { name = 'nvim_lsp_signature_help' },
+        },
+        formatting = {
+          format = lspkind.cmp_format {
+            mode = 'symbol_text',
+            maxwidth = {
+              menu = 50,
+              abbr = 50,
+            },
+            ellipsis_char = '...',
+            show_labelDetails = true,
+          },
         },
       }
     end,
@@ -995,7 +1036,7 @@ require('lazy').setup({
       -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
       -- - sd'   - [S]urround [D]elete [']quotes
       -- - sr)'  - [S]urround [R]eplace [)] [']
-      require('mini.surround').setup()
+      -- require('mini.surround').setup()
 
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
