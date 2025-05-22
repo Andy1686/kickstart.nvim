@@ -185,10 +185,10 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
 -- TIP: Disable arrow keys in normal mode
--- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
--- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
--- vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
--- vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
+vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
+vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
+vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
+vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
 
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
@@ -204,6 +204,16 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 -- vim.keymap.set("n", "<C-S-l>", "<C-w>L", { desc = "Move window to the right" })
 -- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
+
+-- Set every *.component.html file to use the htmlangular filetype
+vim.filetype.add {
+  filename = {
+    ['.component.html'] = 'htmlangular',
+  },
+}
+
+-- Set the trigger text for snippets
+local trigger_text = ';'
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -276,10 +286,10 @@ require('lazy').setup({
     opts = {
       signs = {
         add = { text = '+' },
-        change = { text = '~' },
+        change = { text = '󱓉' },
         delete = { text = '_' },
         topdelete = { text = '‾' },
-        changedelete = { text = '~' },
+        changedelete = { text = '󱓉' },
       },
     },
   },
@@ -346,6 +356,7 @@ require('lazy').setup({
       spec = {
         { '<leader>s', group = '[S]earch' },
         { '<leader>t', group = '[T]oggle' },
+        { '<leader>x', group = 'Diagnosti[X]' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
         { '<leader>o', group = '[O]il', mode = { 'n' } },
         { '<leader>a', group = 'H[a]rpoon', mode = { 'n' } },
@@ -490,13 +501,7 @@ require('lazy').setup({
 
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim', opts = {
-        notification = {
-          window = {
-            winblend = 0,
-          },
-        },
-      } },
+      -- { 'j-hui/fidget.nvim', opts = {} },
 
       -- Allows extra capabilities provided by blink.cmp
       'saghen/blink.cmp',
@@ -588,9 +593,6 @@ require('lazy').setup({
           --  the definition of its *type*, not where it was *defined*.
           map('grt', require('telescope.builtin').lsp_type_definitions, '[G]oto [T]ype Definition')
 
-          -- Open float window with diagnostics
-          map('<leader>e', vim.diagnostic.open_float, '[E]rrors')
-
           -- This function resolves a difference between neovim nightly (version 0.11) and stable (version 0.10)
           ---@param client vim.lsp.Client
           ---@param method vim.lsp.protocol.Method
@@ -673,15 +675,6 @@ require('lazy').setup({
           end,
         },
       }
-      -- Change diagnostic symbols in the sign column (gutter)
-      if vim.g.have_nerd_font then
-        local signs = { ERROR = '', WARN = '', INFO = '', HINT = '' }
-        local diagnostic_signs = {}
-        for type, icon in pairs(signs) do
-          diagnostic_signs[vim.diagnostic.severity[type]] = icon
-        end
-        vim.diagnostic.config { signs = { text = diagnostic_signs } }
-      end
 
       -- LSP servers and clients are able to communicate to each other what features they support.
       --  By default, Neovim doesn't support everything that is in the LSP specification.
@@ -797,9 +790,6 @@ require('lazy').setup({
             require('lspconfig')[server_name].setup(server)
           end,
         },
-        jdtls = function()
-          require('lspconfig').jdtls.setup {}
-        end,
       }
     end,
   },
@@ -886,6 +876,7 @@ require('lazy').setup({
         opts = {},
       },
       'folke/lazydev.nvim',
+      'saghen/blink.compat',
     },
     --- @module 'blink.cmp'
     --- @type blink.cmp.Config
@@ -940,10 +931,83 @@ require('lazy').setup({
       },
 
       sources = {
-        default = { 'lsp', 'path', 'lazydev', 'omni' },
+        default = { 'supermaven', 'lsp', 'path', 'lazydev', 'omni', 'snippets' },
         providers = {
+          supermaven = {
+            name = 'supermaven',
+            module = 'blink.compat.source',
+            score_offset = 200,
+          },
           lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
+          lsp = {
+            name = 'lsp',
+            enabled = true,
+            module = 'blink.cmp.sources.lsp',
+            kind = 'LSP',
+            score_offset = 90,
+          },
+          path = {
+            name = 'Path',
+            module = 'blink.cmp.sources.path',
+            score_offset = 25,
+            fallbacks = { 'snippets', 'buffer' },
+            opts = {
+              trailing_slash = false,
+              label_trailing_slash = true,
+              get_cwd = function(context)
+                return vim.fn.expand(('#%d:p:h'):format(context.bufnr))
+              end,
+              show_hidden_files_by_default = true,
+            },
+          },
+          buffer = {
+            name = 'Buffer',
+            module = 'blink.cmp.sources.buffer',
+            score_offset = 15,
+            enabled = true,
+            max_items = 3,
+            min_keyword_length = 2,
+          },
+          snippets = {
+            name = 'snippets',
+            enabled = true,
+            max_items = 15,
+            min_keyword_length = 2,
+            module = 'blink.cmp.sources.snippets',
+            score_offset = 85,
+            should_show_items = function()
+              local col = vim.api.nvim_win_get_cursor(0)[2]
+              local before_cursor = vim.api.nvim_get_current_line():sub(1, col)
+              return before_cursor:match(trigger_text .. '%w*$') ~= nil
+            end,
+            transform_items = function(_, items)
+              local line = vim.api.nvim_get_current_line()
+              local col = vim.api.nvim_win_get_cursor(0)[2]
+              local before_cursor = line:sub(1, col)
+              local start_pos, end_pos = before_cursor:find(trigger_text .. '[^' .. trigger_text .. ']*$')
+              if start_pos then
+                for _, item in ipairs(items) do
+                  if not item.trigger_text_modified then
+                    ---@diagnostic disable-next-line: inject-field
+                    item.trigger_text_modified = true
+                    item.textEdit = {
+                      newText = item.insertText or item.label,
+                      range = {
+                        start = { line = vim.fn.line '.' - 1, character = start_pos - 1 },
+                        ['end'] = { line = vim.fn.line '.' - 0, character = end_pos },
+                      },
+                    }
+                  end
+                end
+              end
+              return items
+            end,
+          },
         },
+      },
+
+      snippets = {
+        preset = 'luasnip',
       },
 
       -- Blink.cmp includes an optional, recommended rust fuzzy matcher,
@@ -960,41 +1024,17 @@ require('lazy').setup({
     },
   },
 
-  -- { -- You can easily change to a different colorscheme.
-  --   -- Change the name of the colorscheme plugin below, and then
-  --   -- change the command in the config to whatever the name of that colorscheme is.
-  --   --
-  --   -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-  --   'catppuccin/nvim',
-  --   name = 'catppuccin',
-  --   priority = 1000, -- Make sure to load this before all the other start plugins.
-  --   init = function()
-  --     require('catppuccin').setup {
-  --       integrations = {
-  --         fidget = true,
-  --         mason = true,
-  --         which_key = true,
-  --       },
-  --     }
-  --
-  --     -- Load the colorscheme here.
-  --     -- Like many other themes, this one has different styles, and you could load
-  --     -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-  --     vim.cmd.colorscheme 'catppuccin-mocha'
-  --
-  --     -- You can configure highlights by doing something like:
-  --     vim.cmd.hi 'Comment gui=none'
-  --   end,
-  -- },
-
   {
     'EdenEast/nightfox.nvim',
+    priority = 1000,
     init = function()
       require('nightfox').setup {
         options = {
-          transparent = true,
-          inverse = {
-            visual = true,
+          dim_inactive = true,
+          styles = {
+            comments = 'italic',
+            keywords = 'bold',
+            types = 'italic,bold',
           },
         },
       }
@@ -1021,7 +1061,7 @@ require('lazy').setup({
       -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
       -- - sd'   - [S]urround [D]elete [']quotes
       -- - sr)'  - [S]urround [R]eplace [)] [']
-      -- require('mini.surround').setup()
+      require('mini.surround').setup()
 
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
