@@ -102,7 +102,7 @@ vim.g.have_nerd_font = true
 vim.o.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.o.relativenumber = true
+vim.o.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
@@ -165,6 +165,29 @@ vim.o.scrolloff = 10
 -- instead raise a dialog asking if you wish to save the current file(s)
 -- See `:help 'confirm'`
 vim.o.confirm = true
+
+-- Color column
+-- if in a js, ts, html, css, scss, json
+vim.api.nvim_create_autocmd('BufEnter', {
+  callback = function()
+    local filename = vim.fn.expand '%:t'
+    -- log filename
+    print(filename)
+    if filename:match 'js' or filename:match 'ts' or filename:match 'html' or filename:match 'css' or filename:match 'scss' or filename:match 'json' then
+      vim.o.colorcolumn = '120'
+    end
+  end,
+})
+
+-- No fold
+-- autocmd BufWritePost,BufEnter * set nofoldenable foldmethod=manual foldlevelstart=99
+vim.api.nvim_create_autocmd({ 'BufWritePost', 'BufEnter' }, {
+  callback = function()
+    vim.opt.foldenable = false
+    vim.opt.foldmethod = 'manual'
+    vim.opt.foldlevelstart = 99
+  end,
+})
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
