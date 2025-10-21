@@ -28,6 +28,7 @@ local function get_lsp_client_names(have_feature)
       table.insert(client_names, client.name)
     end
   end
+  print('client_names for ', have_feature, vim.inspect(client_names))
   return client_names
 end
 
@@ -112,6 +113,7 @@ local lsp_enable_inlay_hint = true
 local function toggle_inlay_hint()
   local enabled = vim.lsp.inlay_hint.is_enabled { bufnr = 0 }
   vim.lsp.inlay_hint.enable(not enabled, { bufnr = 0 })
+  print('inlay hint switched to', not enabled)
 end
 
 -- lsp attach ------------------------------------------------------------------
