@@ -149,3 +149,18 @@ local function lsp_attach(args)
 end
 
 vim.api.nvim_create_autocmd('LspAttach', { callback = lsp_attach })
+
+vim.lsp.config('ts_go_ls', {
+  cmd = { vim.loop.os_homedir() .. '/dev/clone/typescript-go/built/local/tsgo', '--lsp', '-stdio' },
+  filetypes = {
+    'javascript',
+    'javascriptreact',
+    'javascript.jsx',
+    'typescript',
+    'typescriptreact',
+    'typescript.tsx',
+    'htmlangular',
+  },
+  root_markers = { 'tsconfig.json', 'jsconfig.json', 'package.json', '.git' },
+})
+vim.lsp.enable 'ts_go_ls'
