@@ -171,8 +171,6 @@ vim.o.confirm = true
 vim.api.nvim_create_autocmd('BufEnter', {
   callback = function()
     local filename = vim.fn.expand '%:t'
-    -- log filename
-    print(filename)
     if filename:match 'js' or filename:match 'ts' or filename:match 'html' or filename:match 'css' or filename:match 'scss' or filename:match 'json' then
       vim.o.colorcolumn = '120'
     end
@@ -221,6 +219,13 @@ vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left wind
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+
+vim.keymap.set('n', 'ge', function()
+  local diag = vim.diagnostic.get_next { wrap = true }
+  if diag then
+    vim.diagnostic.jump { diagnostic = diag, wrap = true }
+  end
+end, { desc = 'Jump to next diagnostic' })
 
 -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
 -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
@@ -586,7 +591,10 @@ require('lazy').setup({
 
           -- Rename the variable under your cursor.
           --  Most Language Servers support renaming across files, etc.
-          map('grn', vim.lsp.buf.rename, '[R]e[n]ame')
+          --
+          -- Override by lsp config
+          --
+          -- map('grn', vim.lsp.buf.rename, '[R]e[n]ame')
 
           -- Execute a code action, usually your cursor needs to be on top of an error
           -- or a suggestion from your LSP for this to activate.
