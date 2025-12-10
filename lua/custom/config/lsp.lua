@@ -159,7 +159,6 @@ vim.lsp.config('ts_go_ls', {
     'typescript',
     'typescriptreact',
     'typescript.tsx',
-    'htmlangular',
   },
   root_markers = { 'tsconfig.json', 'jsconfig.json', 'package.json', '.git' },
 })
